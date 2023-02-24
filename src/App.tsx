@@ -1,5 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import {
+  useGetUsersQuery,
+  usePostUserMutation,
+  useDeleteUserMutation,
+} from './redux/usersApi';
 import { addCash, getCash, selectCash } from './redux/slices/cashSlice';
 import {
   selectCustomers,
@@ -8,7 +13,7 @@ import {
   fetchPostCustomer,
 } from './redux/slices/customersSlice';
 import { useAppDispatch, useAppSelector } from './redux/store';
-import { TCustomer } from './types/types';
+import { TCustomer, TUser } from './types/types';
 
 const Button = styled.button`
   font-size: 17px;
@@ -32,13 +37,31 @@ const App: React.FC = () => {
   const { customers } = useAppSelector(selectCustomers);
   const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    dispatch(fetchAllCustomers());
-  }, [dispatch]);
+  const [count, setCount] = useState('');
+  const { data = [], error, isLoading } = useGetUsersQuery(count);
+  const [postUser, { isError }] = usePostUserMutation();
+  const [deleteUser] = useDeleteUserMutation();
+
+  const handlePostUser = async () => {
+    const userName = prompt();
+    if (userName) {
+      const user = {
+        name: userName,
+      };
+      await postUser(user).unwrap();
+    }
+  };
+
+  // useEffect(() => {
+  //   dispatch(fetchAllCustomers());
+  // }, [dispatch]);
+
+  if (isLoading) return <Div>Loading...</Div>;
+  if (error) return <Div>Error</Div>;
 
   return (
     <div style={{ padding: '15%' }}>
-      <Title>Cash: {cash} </Title>
+      {/* <Title>Cash: {cash} </Title>
       <Div>
         <Button onClick={() => dispatch(addCash(Number(prompt())))}>
           Положить на счет
@@ -55,8 +78,8 @@ const App: React.FC = () => {
         <Button onClick={() => dispatch(fetchDeleteCustomer(Number(prompt())))}>
           Удалить пользователя по айди
         </Button>
-      </Div>
-      <Div>
+      </Div> */}
+      {/* <Div>
         {customers.length > 0 ? (
           <Div style={{ flexWrap: 'wrap' }}>
             {customers.map((customer: TCustomer) => (
@@ -73,6 +96,42 @@ const App: React.FC = () => {
           </Div>
         ) : (
           <Div style={{ fontSize: '20px' }}>Клиенты отсутствуют</Div>
+        )}
+      </Div> */}
+      <Button onClick={() => handlePostUser()}>Добавить пользователя</Button>
+      <Div>
+        <select value={count} onChange={(e) => setCount(e.target.value)}>
+          <option value=''>all</option>
+          <option value='5'>5</option>
+          <option value='10'>10</option>
+          <option value='15'>15</option>
+          <option value='20'>20</option>
+          <option value='25'>25</option>
+        </select>
+      </Div>
+      <Div>
+        {data.length > 0 ? (
+          <Div
+            style={{
+              flexWrap: 'wrap',
+              maxWidth: '450px',
+            }}>
+            {data.map((user: TUser) => (
+              <Div
+                onClick={async () => await deleteUser(user.id)}
+                key={user.id}
+                style={{
+                  fontSize: '18px',
+                  border: '1px solid black',
+                  marginLeft: '5px',
+                  marginTop: '5px',
+                }}>
+                {user.name}
+              </Div>
+            ))}
+          </Div>
+        ) : (
+          <Div style={{ fontSize: '20px' }}>Клиенты отсутствуют 2</Div>
         )}
       </Div>
     </div>

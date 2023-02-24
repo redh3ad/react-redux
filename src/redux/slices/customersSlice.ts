@@ -114,7 +114,6 @@ export const customersSlice = createSlice({
       })
       .addMatcher(isPending, (state) => {
         state.status = 'loading';
-        console.log(state.status);
       });
   },
 });
