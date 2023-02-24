@@ -1,3 +1,4 @@
+import { usersApi } from './usersApi';
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import cashSlice from './slices/cashSlice';
@@ -18,6 +19,7 @@ import storage from 'redux-persist/lib/storage';
 const rootReducer = combineReducers({
   cash: cashSlice,
   customers: customersSlice,
+  [usersApi.reducerPath]: usersApi.reducer,
 });
 
 const persistConfig = {
@@ -35,7 +37,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }),
+    }).concat(usersApi.middleware),
 });
 
 export const persistor = persistStore(store);
